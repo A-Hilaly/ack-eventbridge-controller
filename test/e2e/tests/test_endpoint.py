@@ -21,10 +21,10 @@ import logging
 from acktest.resources import random_suffix_name
 from acktest.k8s import resource as k8s
 from acktest.k8s import condition as condition
-from acktest import tags
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_eventbridge_resource
 from e2e.replacement_values import REPLACEMENT_VALUES
 from e2e.tests.helper import EventBridgeValidator
+from e2e.bootstrap_resources import get_bootstrap_resources
 
 RESOURCE_PLURAL = "endpoints"
 
@@ -74,9 +74,11 @@ def endpoint(event_bus):
         resource_name = random_suffix_name("ack-test-endpoint", 24)
         _, eb_cr = event_bus
 
+        resources = get_bootstrap_resources()
         replacements = REPLACEMENT_VALUES.copy()
         replacements["ENDPOINT_NAME"] = resource_name
         replacements["EVENT_BUS_ARN"] = eb_cr["status"]["ackResourceMetadata"]["arn"]
+        replacements["HEALTH_CHECK_LOCATION"] = resources.EndpointHealthCheck.location
 
         # Load EventBus CR
         resource_data = load_eventbridge_resource(
